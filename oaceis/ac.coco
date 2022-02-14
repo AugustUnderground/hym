@@ -1,0 +1,77 @@
+from argparse import ArgumentParser
+from collections import namedtuple
+from collections.abc import Iterable
+
+import hace
+
+parser = ArgumentParser()
+parser.add_argument( "--host", type = str, default = "localhost"
+                   , help = "Host address")
+parser.add_argument( "-p", "--port", type = int, default = "6006"
+                   , help = "Server Port")
+parser.add_argument( "-e", "--env", type = str, default = "op2"
+                   , help = "ACE Environment ID, see GACE doc for what's available")
+parser.add_argument( "-n", "--num", type = int, default = 1
+                   , help = "Number of Pooled Envs")
+parser.add_argument( "--pdk", type = str, default = "xh035-3V3"
+                   , help = "ACE backend, see GACE doc for what's available")
+
+def isiterable(obj) = isinstance(obj, Iterable)
+
+def simulate_pool(envs, sizings: dict[int, dict[str, float]]) = perf where:
+    sizing = {int(i): s for i,s in sizings.items()}
+    perf   = hace.evaluate_circuit_pool(envs, sizing)
+
+def simulate_single(env, sizing: dict[str, float]) = perf where:
+    perf = hace.evaluate_circuit(env, sizing)
+
+def performance(env) = perf where:
+    perf = env |> (if isiterable(env) 
+                      then hace.current_performance_pool 
+                      else hace.current_performance)
+
+def sizing(env) = size where:
+    size = env |> (if isiterable(env) 
+                      then hace.current_sizing_pool 
+                      else hace.current_sizing)
+
+def performance_parameters(env) = pps where:
+    pps = {"params": env |> (if isiterable(env) 
+                                then hace.performance_identifiers_pool 
+                                else hace.performance_identifiers)}
+
+def sizing_parameters(env) = sps where:
+    sps = {"params": env |> (if isiterable(env) 
+                                then hace.sizing_identifiers_pool
+                                else hace.sizing_identifiers)}
+
+def initial_sizing(env) = init where:
+    init = env |> (if isiterable(env) 
+                      then hace.initial_sizing_pool 
+                      else hace.initial_sizing)
+
+def random_sizing(env) = rng where:
+    rng = env |> (if isiterable(env) 
+                      then hace.random_sizing_pool 
+                      else hace.random_sizing)
+
+FunctionSet = namedtuple( "FunctionSet" 
+                        , "simulate "
+                        + "performance "
+                        + "sizing " 
+                        + "performance_parameters "
+                        + "sizing_parameters " 
+                        + "initial_sizing "
+                        + "random_sizing" )
+
+def functions(env_id: str, backend: str, n: int = 1) = funs where:
+    env = (if n == 1 
+              then hace.make_env(env_id, backend)
+              else hace.make_same_env_pool n env_id backend)
+
+    simulate = (if isiterable(env) then simulate_pool else simulate_single)
+
+    funs = [ f$(env) for f in [ simulate, performance, sizing
+                              , performance_parameters, sizing_parameters
+                              , initial_sizing, random_sizing ] 
+           ] |*> FunctionSet

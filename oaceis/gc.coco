@@ -1,0 +1,98 @@
+from argparse import ArgumentParser
+from collections import namedtuple
+from collections.abc import Iterable
+
+import numpy as np
+import gace, gym
+
+parser = ArgumentParser()
+parser.add_argument( "--host", type = str, default = "localhost"
+                   , help = "Host address")
+parser.add_argument( "-p", "--port", type = int, default = "6006"
+                   , help = "Server Port")
+parser.add_argument( "-e", "--env", type = str, default = "op2"
+                   , help = "ACE Environment ID, see GACE doc for what's available")
+parser.add_argument( "-v", "--var", type = int, default = "0"
+                   , help = "GACE Environment variant, see GACE doc for what's available")
+parser.add_argument( "-n", "--num", type = int, default = 1
+                   , help = "Number of Pooled Envs")
+parser.add_argument( "--pdk", type = str, default = "xh035"
+                   , help = "ACE backend, see GACE doc for what's available")
+
+def isiterable(obj) = isinstance(obj, Iterable)
+
+def target(env) = tgt where:
+    tgt = (if isiterable(env) 
+              then {str(i): e.target for i,e in env |> enumerate}
+              else {"0": env.target})
+
+def random_action(env) = action where:
+    action = (if isiterable(env)
+                 then { str(i): e.action_space.sample().tolist() 
+                        for i,e in env |> enumerate }
+                 else {"0": env.action_space.sample().tolist()})
+
+def action_space(env) = space where:
+    space = (if isiterable(env)
+                then { str(i): { "high": a.high |> a.to_jsonable
+                               , "low": a.low |> a.to_jsonable } 
+                       for i,a in env.action_space |> enumerate }
+                else {"0": env.action_space})
+
+def observation_space(env) = space where:
+    space = (if isiterable(env)
+                then { str(i): { "high": o.high |> o.to_jsonable
+                               , "low": o.low |> o.to_jsonable } 
+                       for i,o in env.observation_space |> enumerate }
+                else {"0": env.observation_space})
+
+def close(env) = "Closed" where:
+    env.close()
+
+def random_step(env) = res where:
+    keys = ["observation", "reward", "done", "info"] 
+    res  = (if isiterable(env)
+               then { str(i): { k: (s.tolist() if k == "observation" else s)
+                                for k,s in zip(keys,stp) } 
+                      for i,stp in env.random_step() |*> zip |> enumerate }
+               else { "0": { k: (s.tolist() if k == "observation" else s)
+                      for k,s in env.random_step() |> zip$(keys,?) } })
+
+def step(env, action) = res where:
+    keys = ["observation", "reward", "done", "info"] 
+    act = (if isinstance(action, dict) 
+              then [action[a] |> np.array for a in (action.keys() |> sorted)]
+              else action |> np.array)
+    res  = (if isiterable(env)
+               then { str(i): { k: (s.tolist() if k == "observation" else s)
+                                for k,s in zip(keys,stp) } 
+                      for i,stp in act |> env.step |*> zip |> enumerate }
+               else { "0": { k: (s.tolist() if k == "observation" else s)
+                      for k,s in act |> env.step |> zip$(keys,?) } })
+
+def reset(env) = obs where:
+    obs = (if isiterable(env)
+            then {str(i): o.tolist() for i,o in env.reset() |> enumerate}
+            else {"0": env.reset() |> .tolist()})
+
+FunctionSet = namedtuple( "FunctionSet" 
+                        , "reset "
+                        + "step "
+                        + "close " 
+                        + "action_space "
+                        + "observation_space " 
+                        + "random_action "
+                        + "random_step "
+                        + "target" )
+
+def functions( env_id: str, backend: str, variant: int, n: int = 1
+             ) = funs where:
+    env_name = f"gace:{env_id}-{backend}-v{variant}"
+    env = (if n == 1 
+              then gym.make(env_name)
+              else gace.vector_make_same(env_name, n))
+
+    funs = [ f$(env) for f in [ reset, step, close, action_space
+                              , observation_space, random_action, random_step
+                              , target ] 
+           ] |*> FunctionSet
