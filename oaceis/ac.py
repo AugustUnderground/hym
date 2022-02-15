@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x3458f8d
+# __coconut_hash__ = 0xe1ec258d
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -96,17 +96,3 @@ def random_sizing(env):
     rng = ((hace.random_sizing_pool if isiterable(env) else hace.random_sizing))(env)
 
     return rng
-
-FunctionSet = namedtuple("FunctionSet", "simulate " + "performance " + "sizing " + "performance_parameters " + "sizing_parameters " + "initial_sizing " + "random_sizing")
-
-def functions(env_id,  #type: str
-     backend,  #type: str
-     n=1  #type: int
-    ):
-    env = (hace.make_env(env_id, backend) if n == 1 else hace.make_same_env_pool(n, env_id, backend))
-
-    simulate = (simulate_pool if isiterable(env) else simulate_single)
-
-    funs = (FunctionSet)(*[_coconut.functools.partial(f, env) for f in [simulate, performance, sizing, performance_parameters, sizing_parameters, initial_sizing, random_sizing]])
-
-    return funs

@@ -54,24 +54,3 @@ def random_sizing(env) = rng where:
     rng = env |> (if isiterable(env) 
                       then hace.random_sizing_pool 
                       else hace.random_sizing)
-
-FunctionSet = namedtuple( "FunctionSet" 
-                        , "simulate "
-                        + "performance "
-                        + "sizing " 
-                        + "performance_parameters "
-                        + "sizing_parameters " 
-                        + "initial_sizing "
-                        + "random_sizing" )
-
-def functions(env_id: str, backend: str, n: int = 1) = funs where:
-    env = (if n == 1 
-              then hace.make_env(env_id, backend)
-              else hace.make_same_env_pool n env_id backend)
-
-    simulate = (if isiterable(env) then simulate_pool else simulate_single)
-
-    funs = [ f$(env) for f in [ simulate, performance, sizing
-                              , performance_parameters, sizing_parameters
-                              , initial_sizing, random_sizing ] 
-           ] |*> FunctionSet

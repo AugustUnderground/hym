@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xc5fbd91e
+# __coconut_hash__ = 0x6824b91f
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -91,7 +91,6 @@ def random_step(env):
 def step(env, action):
     keys = ["observation", "reward", "done", "info"]
     act = ([(np.array)(action[a]) for a in ((sorted)(action.keys()))] if isinstance(action, dict) else (np.array)(action))
-    _ = print(act)
     res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*(env.step)(act)))) if isiterable(env) else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))((env.step)(act)))})
 
     return res
@@ -100,17 +99,3 @@ def reset(env):
     obs = (dict(((str(i)), (o.tolist())) for i, o in (enumerate)(env.reset())) if isiterable(env) else {"0": (env.reset()).tolist()})
 
     return obs
-
-FunctionSet = namedtuple("FunctionSet", "reset " + "step " + "close " + "action_space " + "observation_space " + "random_action " + "random_step " + "target")
-
-def functions(env_id,  #type: str
-     backend,  #type: str
-     variant,  #type: int
-     n=1  #type: int
-    ):
-    env_name = "gace:{_coconut_format_0}-{_coconut_format_1}-v{_coconut_format_2}".format(_coconut_format_0=(env_id), _coconut_format_1=(backend), _coconut_format_2=(variant))
-    env = (gym.make(env_name) if n == 1 else gace.vector_make_same(env_name, n))
-
-    funs = (FunctionSet)(*[_coconut.functools.partial(f, env) for f in [reset, step, close, action_space, observation_space, random_action, random_step, target]])
-
-    return funs

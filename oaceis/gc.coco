@@ -74,25 +74,3 @@ def reset(env) = obs where:
     obs = (if isiterable(env)
             then {str(i): o.tolist() for i,o in env.reset() |> enumerate}
             else {"0": env.reset() |> .tolist()})
-
-FunctionSet = namedtuple( "FunctionSet" 
-                        , "reset "
-                        + "step "
-                        + "close " 
-                        + "action_space "
-                        + "observation_space " 
-                        + "random_action "
-                        + "random_step "
-                        + "target" )
-
-def functions( env_id: str, backend: str, variant: int, n: int = 1
-             ) = funs where:
-    env_name = f"gace:{env_id}-{backend}-v{variant}"
-    env = (if n == 1 
-              then gym.make(env_name)
-              else gace.vector_make_same(env_name, n))
-
-    funs = [ f$(env) for f in [ reset, step, close, action_space
-                              , observation_space, random_action, random_step
-                              , target ] 
-           ] |*> FunctionSet
