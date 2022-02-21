@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xa5fdddab
+# __coconut_hash__ = 0x58573be9
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -102,7 +102,7 @@ def observation_space(env):
     return space
 
 def observation_keys(env):
-    keys = (dict(((str(i)), (k)) for i, k in (enumerate)(env.env.observation_keys)) if env.num > 1 else {"0": env.env.observation_keys})
+    keys = (dict(((str(i)), (k["output-parameters"])) for i, k in (enumerate)(env.env.info)) if env.num > 1 else {"0": env.env.info["output-parameters"]})
 
     return keys
 
