@@ -37,6 +37,11 @@ def gace():
         res = gc.current_performance(env)
         return handle_response(res)
 
+    @app.route(f'/{route}/current_sizing', methods=['GET'])
+    def current_sizing():
+        res = gc.current_sizing(env)
+        return handle_response(res)
+
     @app.route(f'/{route}/step', methods=['POST'])
     def step():
         res = gc.step(env, request.json)
