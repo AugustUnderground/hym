@@ -18,6 +18,11 @@ parser.add_argument( "--pdk", type = str, default = "xh035-3V3"
 
 def isiterable(obj) = isinstance(obj, Iterable)
 
+def make_env(env_id: str, backend: str, num: int = 1) = env where:
+    env = (if num == 1 
+              then hace.make_env(env_id, backend)
+              else hace.make_same_env_pool(num, env_id, backend))
+
 def simulate_pool(envs, sizings: dict[int, dict[str, float]]) = perf where:
     sizing = {int(i): s for i,s in sizings.items()}
     perf   = hace.evaluate_circuit_pool(envs, sizing)

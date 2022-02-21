@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x6824b91f
+# __coconut_hash__ = 0xa5fdddab
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -43,6 +43,7 @@ else:
 import numpy as np
 import gace
 import gym
+import hace as ac
 
 parser = ArgumentParser()
 parser.add_argument("--host", type=str, default="localhost", help="Host address")
@@ -52,50 +53,93 @@ parser.add_argument("-v", "--var", type=int, default="0", help="GACE Environment
 parser.add_argument("-n", "--num", type=int, default=1, help="Number of Pooled Envs")
 parser.add_argument("--pdk", type=str, default="xh035", help="ACE backend, see GACE doc for what's available")
 
-@_coconut_tco
-def isiterable(obj):
-    return _coconut_tail_call(isinstance, obj, Iterable)
+class Environment(_coconut.typing.NamedTuple("Environment", [("env", '_coconut.typing.Any'), ("env_id", 'str'), ("ace_id", 'str'), ("backend", 'str'), ("variant", 'int'), ("num", 'int')]), _coconut.object):
+    _coconut_is_data = True
+    __slots__ = ()
+    __ne__ = _coconut.object.__ne__
+    def __eq__(self, other):
+        return self.__class__ is other.__class__ and _coconut.tuple.__eq__(self, other)
+    def __hash__(self):
+        return _coconut.tuple.__hash__(self) ^ hash(self.__class__)
+    __match_args__ = ('env', 'env_id', 'ace_id', 'backend', 'variant', 'num')
 
+_coconut_call_set_names(Environment)
+def make_env(env_id,  #type: str
+     backend,  #type: str
+     variant,  #type: int
+     num  #type: int
+    ):
+    env_name = "gace:{_coconut_format_0}-{_coconut_format_1}-v{_coconut_format_2}".format(_coconut_format_0=(env_id), _coconut_format_1=(backend), _coconut_format_2=(variant))
+    env = (gym.make(env_name) if num == 1 else gace.vector_make_same(env_name, num))
+    environment = Environment(env, env_name, env_id, backend, variant, num)
+
+    return environment
+
+def restart(env):
+    _, env_id, _, backend, variant, num = env
+    new_env = make_env(env_id, backend, variant, num)
+
+    return new_env
 
 def target(env):
-    tgt = (dict(((str(i)), (e.target)) for i, e in (enumerate)(env)) if isiterable(env) else {"0": env.target})
+    tgt = (dict(((str(i)), (e.target)) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": env.env.target})
 
     return tgt
 
 def random_action(env):
-    action = (dict(((str(i)), (e.action_space.sample().tolist())) for i, e in (enumerate)(env)) if isiterable(env) else {"0": env.action_space.sample().tolist()})
+    action = (dict(((str(i)), (e.action_space.sample().tolist())) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": env.env.action_space.sample().tolist()})
 
     return action
 
 def action_space(env):
-    space = (dict(((str(i)), ({"high": (a.to_jsonable)(a.high), "low": (a.to_jsonable)(a.low)})) for i, a in (enumerate)(env.action_space)) if isiterable(env) else {"0": env.action_space})
+    space = (dict(((str(i)), ({"high": (a.to_jsonable)(a.high), "low": (a.to_jsonable)(a.low)})) for i, a in (enumerate)(env.env.action_space)) if env.num > 1 else {"0": env.env.action_space})
 
     return space
 
 def observation_space(env):
-    space = (dict(((str(i)), ({"high": (o.to_jsonable)(o.high), "low": (o.to_jsonable)(o.low)})) for i, o in (enumerate)(env.observation_space)) if isiterable(env) else {"0": env.observation_space})
+    space = (dict(((str(i)), ({"high": (o.to_jsonable)(o.high), "low": (o.to_jsonable)(o.low)})) for i, o in (enumerate)(env.env.observation_space)) if env.num > 1 else {"0": env.env.observation_space})
 
     return space
 
-def close(env):
-    env.close()
+def observation_keys(env):
+    keys = (dict(((str(i)), (k)) for i, k in (enumerate)(env.env.observation_keys)) if env.num > 1 else {"0": env.env.observation_keys})
 
-    return "Closed"
+    return keys
+
+def close(env):
+    closed = env.env.close()
+
+    return closed
+
+def current_performance(env):
+    perf = (dict(((str(i)), ((ac.current_performance)(e.ace))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": (ac.current_performance)(env.env.ace)})
+
+    return perf
 
 def random_step(env):
     keys = ["observation", "reward", "done", "info"]
-    res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*env.random_step()))) if isiterable(env) else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))(env.random_step()))})
+    res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*env.env.random_step()))) if env.num > 1 else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))(env.env.random_step()))})
 
     return res
 
-def step(env, action):
+def step(env, action, restart_count=0):
     keys = ["observation", "reward", "done", "info"]
     act = ([(np.array)(action[a]) for a in ((sorted)(action.keys()))] if isinstance(action, dict) else (np.array)(action))
-    res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*(env.step)(act)))) if isiterable(env) else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))((env.step)(act)))})
+    try:
+        res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*(env.env.step)(act)))) if env.num > 1 else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))((env.env.step)(act)))})
+    except (ac.AceCorruptionException, ac.AcePoolCorruptionException) as err:
+        print("Restarting [{_coconut_format_0}] due to corruption\n\n{_coconut_format_1}".format(_coconut_format_0=(restart_count), _coconut_format_1=(err)))
+        new_env = restart(env)
+        res = step(new_env, action, restart_count + 1)
 
     return res
 
-def reset(env):
-    obs = (dict(((str(i)), (o.tolist())) for i, o in (enumerate)(env.reset())) if isiterable(env) else {"0": (env.reset()).tolist()})
+def reset(env, restart_count=0):
+    try:
+        obs = (dict(((str(i)), (o.tolist())) for i, o in (enumerate)(env.env.reset())) if env.num > 1 else {"0": (env.env.reset()).tolist()})
+    except (ac.AceCorruptionException, ac.AcePoolCorruptionException) as err:
+        print("Restarting [{_coconut_format_0}] due to corruption\n\n{_coconut_format_1}".format(_coconut_format_0=(restart_count), _coconut_format_1=(err)))
+        new_env = restart(env)
+        obs = reset(new_env, action, restart_count + 1)
 
     return obs

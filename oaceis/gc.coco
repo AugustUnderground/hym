@@ -4,6 +4,7 @@ from collections.abc import Iterable
 
 import numpy as np
 import gace, gym
+import hace as ac
 
 parser = ArgumentParser()
 parser.add_argument( "--host", type = str, default = "localhost"
@@ -19,58 +20,92 @@ parser.add_argument( "-n", "--num", type = int, default = 1
 parser.add_argument( "--pdk", type = str, default = "xh035"
                    , help = "ACE backend, see GACE doc for what's available")
 
-def isiterable(obj) = isinstance(obj, Iterable)
+data Environment( env, env_id: str, ace_id: str, backend: str
+                , variant: int, num: int)
+
+def make_env( env_id: str, backend: str, variant: int, num: int
+            ) = environment where:
+    env_name = f"gace:{env_id}-{backend}-v{variant}"
+    env = (if num == 1 
+              then gym.make(env_name)
+              else gace.vector_make_same(env_name, num))
+    environment = Environment(env, env_name, env_id, backend, variant, num)
+
+def restart(env) = new_env where:
+    _, env_id, _, backend, variant, num = env
+    new_env = make_env(env_id, backend, variant, num)
 
 def target(env) = tgt where:
-    tgt = (if isiterable(env) 
-              then {str(i): e.target for i,e in env |> enumerate}
-              else {"0": env.target})
+    tgt = (if env.num > 1
+              then {str(i): e.target for i,e in env.env |> enumerate}
+              else {"0": env.env.target})
 
 def random_action(env) = action where:
-    action = (if isiterable(env)
+    action = (if env.num > 1
                  then { str(i): e.action_space.sample().tolist() 
-                        for i,e in env |> enumerate }
-                 else {"0": env.action_space.sample().tolist()})
+                        for i,e in env.env |> enumerate }
+                 else {"0": env.env.action_space.sample().tolist()})
 
 def action_space(env) = space where:
-    space = (if isiterable(env)
+    space = (if env.num > 1
                 then { str(i): { "high": a.high |> a.to_jsonable
                                , "low": a.low |> a.to_jsonable } 
-                       for i,a in env.action_space |> enumerate }
-                else {"0": env.action_space})
+                       for i,a in env.env.action_space |> enumerate }
+                else {"0": env.env.action_space})
 
 def observation_space(env) = space where:
-    space = (if isiterable(env)
+    space = (if env.num > 1
                 then { str(i): { "high": o.high |> o.to_jsonable
                                , "low": o.low |> o.to_jsonable } 
-                       for i,o in env.observation_space |> enumerate }
-                else {"0": env.observation_space})
+                       for i,o in env.env.observation_space |> enumerate }
+                else {"0": env.env.observation_space})
 
-def close(env) = "Closed" where:
-    env.close()
+def observation_keys(env) = keys where:
+    keys = (if env.num > 1
+                then {str(i): k for i,k in env.env.observation_keys |> enumerate}
+                else {"0": env.env.observation_keys})
+
+def close(env) = closed where:
+    closed = env.env.close()
+
+def current_performance(env) = perf where:
+    perf = (if env.num > 1
+               then { str(i): e.ace |> ac.current_performance 
+                      for i,e in env.env |> enumerate }
+               else { "0": env.env.ace |> ac.current_performance })
 
 def random_step(env) = res where:
     keys = ["observation", "reward", "done", "info"] 
-    res  = (if isiterable(env)
+    res  = (if env.num > 1
                then { str(i): { k: (s.tolist() if k == "observation" else s)
                                 for k,s in zip(keys,stp) } 
-                      for i,stp in env.random_step() |*> zip |> enumerate }
+                      for i,stp in env.env.random_step() |*> zip |> enumerate }
                else { "0": { k: (s.tolist() if k == "observation" else s)
-                      for k,s in env.random_step() |> zip$(keys,?) } })
+                      for k,s in env.env.random_step() |> zip$(keys,?) } })
 
-def step(env, action) = res where:
+def step(env, action, restart_count = 0) = res where:
     keys = ["observation", "reward", "done", "info"] 
     act = (if isinstance(action, dict) 
               then [action[a] |> np.array for a in (action.keys() |> sorted)]
               else action |> np.array)
-    res  = (if isiterable(env)
-               then { str(i): { k: (s.tolist() if k == "observation" else s)
-                                for k,s in zip(keys,stp) } 
-                      for i,stp in act |> env.step |*> zip |> enumerate }
-               else { "0": { k: (s.tolist() if k == "observation" else s)
-                      for k,s in act |> env.step |> zip$(keys,?) } })
+    try:
+        res = (if env.num > 1
+                  then { str(i): { k: (s.tolist() if k == "observation" else s)
+                                   for k,s in zip(keys,stp) } 
+                         for i,stp in act |> env.env.step |*> zip |> enumerate }
+                  else { "0": { k: (s.tolist() if k == "observation" else s)
+                         for k,s in act |> env.env.step |> zip$(keys,?) } })
+    except ac.AceCorruptionException, ac.AcePoolCorruptionException as err:
+        print(f"Restarting [{restart_count}] due to corruption\n\n{err}")
+        new_env = restart(env)
+        res = step(new_env, action, restart_count + 1)
 
-def reset(env) = obs where:
-    obs = (if isiterable(env)
-            then {str(i): o.tolist() for i,o in env.reset() |> enumerate}
-            else {"0": env.reset() |> .tolist()})
+def reset(env, restart_count = 0) = obs where:
+    try:
+        obs = (if env.num > 1
+                then {str(i): o.tolist() for i,o in env.env.reset() |> enumerate}
+                else {"0": env.env.reset() |> .tolist()})
+    except ac.AceCorruptionException, ac.AcePoolCorruptionException as err:
+        print(f"Restarting [{restart_count}] due to corruption\n\n{err}")
+        new_env = restart(env)
+        obs = reset(new_env, action, restart_count + 1)

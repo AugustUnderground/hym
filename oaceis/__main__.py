@@ -22,13 +22,20 @@ def handle_response(res):
 
 def gace():
     args = gc.parser.parse_args()
-    env, pdk, var, num, host, port = \
+    env_id, pdk, var, num, host, port = \
             [ getattr(args, a) for a in
               ["env", "pdk", "var", "num", "host", "port"]]
 
-    route = f'{env}-{pdk}-v{var}'
+    env = gc.make_env(env_id, pdk, var, num)
+
+    route = f'{env_id}-{pdk}-v{var}'
 
     app = Flask("__main__")
+
+    @app.route(f'/{route}/current_performance', methods=['GET'])
+    def current_performance():
+        res = gc.current_performance(env)
+        return handle_response(res)
 
     @app.route(f'/{route}/step', methods=['POST'])
     def step():
@@ -55,6 +62,11 @@ def gace():
         res = gc.observation_space(env)
         return handle_response(res)
 
+    @app.route(f'/{route}/observation_keys', methods=['GET'])
+    def observation_keys():
+        res = gc.observation_keys(env)
+        return handle_response(res)
+
     @app.route(f'/{route}/random_action', methods=['GET'])
     def random_action():
         res = gc.random_action(env)
@@ -71,11 +83,13 @@ def gace():
 def ace():
     args = ac.parser.parse_args()
 
-    env, pdk, num, host, port = \
+    env_id, pdk, num, host, port = \
             [ getattr(args, a) for a in
               ["env", "pdk", "num", "host", "port"]]
 
-    route = f'{env}-{pdk}'
+    env = ac.make_env(env_id, pdk, num)
+
+    route = f'{env_id}-{pdk}'
 
     app = Flask("__main__")
 

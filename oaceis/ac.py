@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xe1ec258d
+# __coconut_hash__ = 0x6e89d998
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -53,6 +53,14 @@ parser.add_argument("--pdk", type=str, default="xh035-3V3", help="ACE backend, s
 def isiterable(obj):
     return _coconut_tail_call(isinstance, obj, Iterable)
 
+
+def make_env(env_id,  #type: str
+     backend,  #type: str
+     num=1  #type: int
+    ):
+    env = (hace.make_env(env_id, backend) if num == 1 else hace.make_same_env_pool(num, env_id, backend))
+
+    return env
 
 def simulate_pool(envs, sizings  #type: dict[int, dict[str, float]]
     ):
