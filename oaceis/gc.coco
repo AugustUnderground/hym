@@ -75,7 +75,7 @@ def current_performance(env) = perf where:
                                 for k,v in e.ace |> ac.current_performance |> .items() }
                       for i,e in env.env |> enumerate }
                else { "0": { k: v |> np.nan_to_num 
-                             for env.env.ace |> ac.current_performance |> .items() } })
+                             for k,v in env.env.ace |> ac.current_performance |> .items() } })
 
 def current_sizing(env) = perf where:
     perf = (if env.num > 1
@@ -83,7 +83,7 @@ def current_sizing(env) = perf where:
                                 for k,v in e.ace |> ac.current_sizing |> .items() }
                       for i,e in env.env |> enumerate }
                else { "0": { k: v |> np.nan_to_num 
-                             for env.env.ace |> ac.current_sizing |> .items() } })
+                             for k,v in env.env.ace |> ac.current_sizing |> .items() } })
 
 def random_step(env) = res where:
     keys = ["observation", "reward", "done", "info"] 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x58573be9
+# __coconut_hash__ = 0xc147386d
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -112,7 +112,12 @@ def close(env):
     return closed
 
 def current_performance(env):
-    perf = (dict(((str(i)), ((ac.current_performance)(e.ace))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": (ac.current_performance)(env.env.ace)})
+    perf = (dict(((str(i)), (dict(((k), ((np.nan_to_num)(v))) for k, v in ((ac.current_performance)(e.ace)).items()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": dict(((k), ((np.nan_to_num)(v))) for k, v in ((ac.current_performance)(env.env.ace)).items())})
+
+    return perf
+
+def current_sizing(env):
+    perf = (dict(((str(i)), (dict(((k), ((np.nan_to_num)(v))) for k, v in ((ac.current_sizing)(e.ace)).items()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": dict(((k), ((np.nan_to_num)(v))) for k, v in ((ac.current_sizing)(env.env.ace)).items())})
 
     return perf
 
