@@ -2,8 +2,9 @@ import sys
 
 from flask import Flask, request, abort
 
-from oaceis import ac
-from oaceis import gc
+from hym import ac
+from hym import gc
+from hym import gm
 
 GPL_NOTICE = f"""
 PRECEPT Copyright (C) 2021 Electronics & Drives
@@ -19,6 +20,50 @@ def handle_response(res):
         abort(400)
     else:
         return res
+
+def gym():
+    args = gm.parser.parse_args()
+    env_id, var, num, host, port = [ getattr(args, a) for a in
+                                     ["env", "var", "num", "host", "port"] ]
+
+    env = gm.make_env(env_id, var, num)
+
+    route = f'{env_id}-v{var}'
+
+    app = Flask("__main__")
+
+    @app.route(f'/{route}/step', methods=['POST'])
+    def step():
+        res = gm.step(env, request.json)
+        return handle_response(res)
+
+    @app.route(f'/{route}/reset', methods=['GET'])
+    def reset():
+        res = gm.reset(env)
+        return handle_response(res)
+
+    @app.route(f'/{route}/action_space', methods=['GET'])
+    def action_space():
+        res = gm.action_space(env)
+        return handle_response(res)
+
+    @app.route(f'/{route}/observation_space', methods=['GET'])
+    def observation_space():
+        res = gm.observation_space(env)
+        return handle_response(res)
+
+    @app.route(f'/{route}/random_action', methods=['GET'])
+    def random_action():
+        res = gm.random_action(env)
+        return handle_response(res)
+
+    @app.route(f'/{route}/random_step', methods=['GET'])
+    def random_step():
+        res = gm.random_step(env)
+        return handle_response(res)
+
+    print(f"Launching Gym Server. Access at http://{host}:{port}/{route}/")
+    return app.run(host = host, port = port)
 
 def gace():
     args = gc.parser.parse_args()

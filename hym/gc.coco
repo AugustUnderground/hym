@@ -62,9 +62,9 @@ def observation_space(env) = space where:
 
 def observation_keys(env) = keys where:
     keys = (if env.num > 1
-                then { str(i): k["output-parameters"] 
+                then { str(i): k["observations"] 
                        for i,k in env.env.info |> enumerate }
-                else {"0": env.env.info["output-parameters"]})
+                else {"0": env.env.info["observations"]})
 
 def close(env) = closed where:
     closed = env.env.close()

@@ -1,0 +1,72 @@
+from argparse import ArgumentParser
+from collections import namedtuple
+from collections.abc import Iterable
+
+import numpy as np
+import gym
+
+#envs = gym.vector.make("BipedalWalker-v3", num_envs = 4)
+#envs.reset()
+#keys = ["observation", "reward", "done", "info"] 
+#o_,r,d,i = envs.action_space.sample() |> envs.step 
+#o = o_.tolist()
+#res = [o,r,d,i] |*> zip |> list |> map$(dict .. zip$(keys)) |> enumerate |> dict
+
+parser = ArgumentParser()
+parser.add_argument( "--host", type = str, default = "localhost"
+                   , help = "Host address")
+parser.add_argument( "-p", "--port", type = int, default = "6006"
+                   , help = "Server Port")
+parser.add_argument( "-e", "--env", type = str, default = "BipedalWalker"
+                   , help = "Gym Environment ID")
+parser.add_argument( "-v", "--var", type = int, default = "3"
+                   , help = "Gym Environment variant")
+parser.add_argument( "-n", "--num", type = int, default = 1
+                   , help = "Number of Vectorized Envs")
+
+data Environment(env, env_id: str, variant: int, num: int)
+
+def make_env(env_id: str, variant: int, num: int) = environment where:
+    env_name    = f"{env_id}-v{variant}"
+    env         = gym.vector.make(env_name, num_envs = num)
+    environment = Environment(env, env_id, variant, num)
+
+def restart(env) = new_env where:
+    _, env_id, variant, num = env
+    new_env = make_env(env_id, variant, num)
+
+def random_action(env) = action where:
+    action = env.env.action_space.sample() |> map$(.tolist()) |> enumerate |> dict
+
+def action_space(env) = space where:
+    space = { i: { k: getattr(s, k) |> s.to_jsonable for k in ["high", "low"] } 
+              for i,s in enumerate(env.env.action_space) }
+
+def observation_space(env) = space where:
+    tj    = env.observation_space.to_jsonable
+    at    = ["high", "low"]
+    os    = env.observation_space
+    hi,lo = [getattr(os,k) |> tj for k in at]
+    space = zip(hi,lo) |> map$(dict .. zip$(at)) |> enumerate |> dict
+
+def close(env) = closed where:
+    closed = env.env.close()
+
+def random_step(env) = res where:
+    keys = ["observation", "reward", "done", "info"] 
+    o_,r,d_,i = env.env.action_space.sample() |> env.env.step 
+    o = o_.tolist()
+    d = map bool d_
+    res = [o,r,d,i] |*> zip |> list |> map$(dict .. zip$(keys)) |> enumerate |> dict
+    print res
+
+def step(env, action) = res where:
+    keys = ["observation", "reward", "done", "info"] 
+    o_,r,d_,i = [ action[a] |> np.array for a in (action.keys() |> sorted)
+               ] |> env.env.step
+    o = o_.tolist()
+    d = map bool d_
+    res = [o,r,d,i] |*> zip |> list |> map$(dict .. zip$(keys)) |> enumerate |> dict
+
+def reset(env) = obs where:
+    obs = env.env.reset() |> .tolist() |> zip$(map(str,range(env.num)) |> list) |> dict
