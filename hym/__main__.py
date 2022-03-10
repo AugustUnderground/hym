@@ -107,6 +107,11 @@ def gace():
         res = gc.action_space(env)
         return handle_response(res)
 
+    @app.route(f'/{route}/action_keys', methods=['GET'])
+    def action_keys():
+        res = gc.action_keys(env)
+        return handle_response(res)
+
     @app.route(f'/{route}/observation_space', methods=['GET'])
     def observation_space():
         res = gc.observation_space(env)

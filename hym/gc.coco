@@ -53,6 +53,12 @@ def action_space(env) = space where:
                        for i,a in env.env.action_space |> enumerate }
                 else {"0": env.env.action_space})
 
+def action_keys(env) = keys where:
+    keys = (if env.num > 1
+                then { str(i): k["actions"] 
+                       for i,k in env.env.info |> enumerate }
+                else {"0": env.env.info["actions"]})
+
 def observation_space(env) = space where:
     space = (if env.num > 1
                 then { str(i): { "high": o.high |> o.to_jsonable

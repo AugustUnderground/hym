@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x8b6b8d89
+# __coconut_hash__ = 0xb7af2634
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -95,6 +95,11 @@ def action_space(env):
     space = (dict(((str(i)), ({"high": (a.to_jsonable)(a.high), "low": (a.to_jsonable)(a.low)})) for i, a in (enumerate)(env.env.action_space)) if env.num > 1 else {"0": env.env.action_space})
 
     return space
+
+def action_keys(env):
+    keys = (dict(((str(i)), (k["actions"])) for i, k in (enumerate)(env.env.info)) if env.num > 1 else {"0": env.env.info["actions"]})
+
+    return keys
 
 def observation_space(env):
     space = (dict(((str(i)), ({"high": (o.to_jsonable)(o.high), "low": (o.to_jsonable)(o.low)})) for i, o in (enumerate)(env.env.observation_space)) if env.num > 1 else {"0": env.env.observation_space})
