@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xb7af2634
+# __coconut_hash__ = 0xaccffff6
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -144,9 +144,9 @@ def step(env, action, restart_count=0):
 
     return res
 
-def reset(env, restart_count=0):
+def reset(env, env_ids=[], done_mask=None, restart_count=0):
     try:
-        obs = (dict(((str(i)), (o.tolist())) for i, o in (enumerate)(env.env.reset())) if env.num > 1 else {"0": (env.env.reset()).tolist()})
+        obs = (dict(((str(i)), (o.tolist())) for i, o in (enumerate)(env.env.reset(env_ids=env_ids, done_mask=done_mask))) if env.num > 1 else {"0": (env.env.reset()).tolist()})
     except (ac.AceCorruptionException, ac.AcePoolCorruptionException) as err:
         print("Restarting [{_coconut_format_0}] due to corruption\n\n{_coconut_format_1}".format(_coconut_format_0=(restart_count), _coconut_format_1=(err)))
         new_env = restart(env)

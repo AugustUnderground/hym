@@ -117,10 +117,13 @@ def step(env, action, restart_count = 0) = res where:
         new_env = restart(env)
         res = step(new_env, action, restart_count + 1)
 
-def reset(env, restart_count = 0) = obs where:
+def reset(env, env_ids = [], done_mask = None, restart_count = 0) = obs where:
     try:
         obs = (if env.num > 1
-                then {str(i): o.tolist() for i,o in env.env.reset() |> enumerate}
+                then { str(i): o.tolist() 
+                       for i,o in env.env.reset( env_ids = env_ids
+                                               , done_mask = done_mask
+                                               ) |> enumerate }
                 else {"0": env.env.reset() |> .tolist()})
     except ac.AceCorruptionException, ac.AcePoolCorruptionException as err:
         print(f"Restarting [{restart_count}] due to corruption\n\n{err}")
