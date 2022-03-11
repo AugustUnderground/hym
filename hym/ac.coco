@@ -30,6 +30,10 @@ def simulate_pool(envs, sizings: dict[int, dict[str, float]]) = perf where:
 def simulate_single(env, sizing: dict[str, float]) = perf where:
     perf = hace.evaluate_circuit(env, sizing)
 
+def simulate(env, sizing) = perf where:
+    perf = (if isiterable(env) then simulate_pool(env, sizing) 
+                               else simulate_single(env, sizing))
+
 def performance(env) = perf where:
     perf = env |> (if isiterable(env) 
                       then hace.current_performance_pool 

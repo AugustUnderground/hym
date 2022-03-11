@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x6e89d998
+# __coconut_hash__ = 0xde71c936
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -72,6 +72,11 @@ def simulate_pool(envs, sizings  #type: dict[int, dict[str, float]]
 def simulate_single(env, sizing  #type: dict[str, float]
     ):
     perf = hace.evaluate_circuit(env, sizing)
+
+    return perf
+
+def simulate(env, sizing):
+    perf = (simulate_pool(env, sizing) if isiterable(env) else simulate_single(env, sizing))
 
     return perf
 
