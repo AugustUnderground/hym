@@ -92,10 +92,10 @@ def gace():
         res = gc.step(env, request.json)
         return handle_response(res)
 
-    #@app.route(f'/{route}/reset', methods=['GET'])
-    #def reset():
-    #    res = gc.reset(env)
-    #    return handle_response(res)
+    @app.route(f'/{route}/log_path', methods=['GET'])
+    def log_path():
+        res = gc.log_path(env)
+        return handle_response(res)
 
     @app.route(f'/{route}/reset', methods=['GET', 'POST'])
     def reset():

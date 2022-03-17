@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xaccffff6
+# __coconut_hash__ = 0x82cedc8a
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -153,3 +153,8 @@ def reset(env, env_ids=[], done_mask=None, restart_count=0):
         obs = reset(new_env, action, restart_count + 1)
 
     return obs
+
+def log_path(env):
+    res = ({"path": env.env.base_log_path} if env.num > 1 else {"path": env.env.data_log_path})
+
+    return res

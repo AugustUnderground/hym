@@ -129,3 +129,8 @@ def reset(env, env_ids = [], done_mask = None, restart_count = 0) = obs where:
         print(f"Restarting [{restart_count}] due to corruption\n\n{err}")
         new_env = restart(env)
         obs = reset(new_env, action, restart_count + 1)
+
+def log_path(env) = res where:
+    res = (if env.num > 1 
+              then { "path": env.env.base_log_path }
+              else { "path": env.env.data_log_path })
