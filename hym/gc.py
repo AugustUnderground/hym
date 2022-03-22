@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x82cedc8a
+# __coconut_hash__ = 0x250f329a
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -87,7 +87,7 @@ def target(env):
     return tgt
 
 def random_action(env):
-    action = (dict(((str(i)), (e.action_space.sample().tolist())) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": env.env.action_space.sample().tolist()})
+    action = (dict(((str(i)), ((e.action_space.sample() if type(e.action_space) is gym.spaces.Discrete else e.action_space.sample().tolist()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": (env.env.action_space.sample() if type(env.env.action_space) is gym.spaces.Discrete else env.evn.action_space.sample().tolist())})
 
     return action
 
@@ -134,7 +134,7 @@ def random_step(env):
 
 def step(env, action, restart_count=0):
     keys = ["observation", "reward", "done", "info"]
-    act = ([(np.array)(action[a]) for a in ((sorted)(action.keys()))] if isinstance(action, dict) else (np.array)(action))
+    act = ([(int(action[a]) if type(env.env.action_space) is gym.spaces.Discrete else np.array(action[a])) for a in ((sorted)(action.keys()))] if isinstance(action, dict) else (int(action) if type(env.env.action_space) is gym.spaces.Discrete else np.array(action)))
     try:
         res = (dict(((str(i)), (dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in zip(keys, stp)))) for i, stp in (enumerate)((zip)(*(env.env.step)(act)))) if env.num > 1 else {"0": dict(((k), ((s.tolist() if k == "observation" else s))) for k, s in (_coconut_partial(zip, {0: keys}, 2))((env.env.step)(act)))})
     except (ac.AceCorruptionException, ac.AcePoolCorruptionException) as err:

@@ -77,6 +77,11 @@ def gace():
 
     app = Flask("__main__")
 
+    @app.route(f'/{route}/num_envs', methods=['GET'])
+    def num_envs():
+        res = {"num": num}
+        return handle_response(res)
+
     @app.route(f'/{route}/current_performance', methods=['GET'])
     def current_performance():
         res = gc.current_performance(env)
