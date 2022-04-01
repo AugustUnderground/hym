@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x250f329a
+# __coconut_hash__ = 0x57cabe1b
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -69,8 +69,9 @@ def make_env(env_id,  #type: str
      variant,  #type: int
      num  #type: int
     ):
+    target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
     env_name = "gace:{_coconut_format_0}-{_coconut_format_1}-v{_coconut_format_2}".format(_coconut_format_0=(env_id), _coconut_format_1=(backend), _coconut_format_2=(variant))
-    env = (gym.make(env_name) if num == 1 else gace.vector_make_same(env_name, num))
+    env = (gym.make(env_name, target_filter=target_filter) if num == 1 else gace.vector_make_same(env_name, num, target_filter=target_filter))
     environment = Environment(env, env_name, env_id, backend, variant, num)
 
     return environment

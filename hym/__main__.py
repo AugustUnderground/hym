@@ -142,7 +142,9 @@ def gace():
         res = gc.random_step(env)
         return handle_response(res)
 
-    print(f"Launching GACE Server. Access at http://{host}:{port}/{route}/")
+    print(f"Launching GACE Server.")
+    print(f"\tURL: http://{host}:{port}/{route}/")
+    print(f"\tLog: {gc.log_path(env)['path']}")
     return app.run(host = host, port = port)
 
 def ace():
@@ -193,7 +195,8 @@ def ace():
         res = ac.random_sizing(env)
         return handle_response(res)
 
-    print(f"Launching HACE Server. Access at http://{host}:{port}/{route}/")
+    print(f"Launching HACE Server")
+    print(f"\tURL: http://{host}:{port}/{route}/")
     return app.run(host = host, port = port)
 
 def main():

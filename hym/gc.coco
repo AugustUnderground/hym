@@ -25,10 +25,11 @@ data Environment( env, env_id: str, ace_id: str, backend: str
 
 def make_env( env_id: str, backend: str, variant: int, num: int
             ) = environment where:
+    target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
     env_name = f"gace:{env_id}-{backend}-v{variant}"
     env = (if num == 1 
-              then gym.make(env_name)
-              else gace.vector_make_same(env_name, num))
+              then gym.make(env_name, target_filter = target_filter)
+              else gace.vector_make_same(env_name, num, target_filter = target_filter))
     environment = Environment(env, env_name, env_id, backend, variant, num)
 
 def restart(env) = new_env where:
