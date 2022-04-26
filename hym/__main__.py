@@ -112,6 +112,16 @@ def gace():
         res = gc.target(env)
         return handle_response(res)
 
+    @app.route(f'/{route}/predicate', methods=['GET'])
+    def predicate():
+        res = gc.predicate(env)
+        return handle_response(res)
+
+    @app.route(f'/{route}/scaler', methods=['GET'])
+    def scaler():
+        res = gc.scaler(env)
+        return handle_response(res)
+
     @app.route(f'/{route}/action_space', methods=['GET'])
     def action_space():
         res = gc.action_space(env)

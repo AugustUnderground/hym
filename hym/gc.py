@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x57cabe1b
+# __coconut_hash__ = 0xaee8bca6
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -69,9 +69,10 @@ def make_env(env_id,  #type: str
      variant,  #type: int
      num  #type: int
     ):
+    num_steps = 50
     target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
     env_name = "gace:{_coconut_format_0}-{_coconut_format_1}-v{_coconut_format_2}".format(_coconut_format_0=(env_id), _coconut_format_1=(backend), _coconut_format_2=(variant))
-    env = (gym.make(env_name, target_filter=target_filter) if num == 1 else gace.vector_make_same(env_name, num, target_filter=target_filter))
+    env = (gym.make(env_name, target_filter=target_filter, max_steps=num_steps) if num == 1 else gace.vector_make_same(env_name, num, target_filter=target_filter, max_steps=num_steps))
     environment = Environment(env, env_name, env_id, backend, variant, num)
 
     return environment
@@ -86,6 +87,16 @@ def target(env):
     tgt = (dict(((str(i)), (e.target)) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": env.env.target})
 
     return tgt
+
+def predicate(env):
+    pred = (dict(((str(i)), (dict(((k), (p)) for k, p in gace.target.target_predicate(e.ace_id).items() if k in e.target.keys()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": dict(((k), (p)) for k, p in gace.target.target_predicate(env.ace_id).items() if k in env.env.target.keys())})
+
+    return pred
+
+def scaler(env):
+    scl = (dict(((str(i)), (dict(((k), (p)) for k, p in gace.target.performance_scaler(e.ace_id, e.ace_backend).items() if k in e.target.keys()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": dict(((k), (p)) for k, p in gace.target.performance_scaler(env.ace_id, env.ace_backend).items() if k in env.env.target.keys())})
+
+    return scl
 
 def random_action(env):
     action = (dict(((str(i)), ((e.action_space.sample() if type(e.action_space) is gym.spaces.Discrete else e.action_space.sample().tolist()))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": (env.env.action_space.sample() if type(env.env.action_space) is gym.spaces.Discrete else env.evn.action_space.sample().tolist())})
