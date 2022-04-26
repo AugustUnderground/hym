@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0xaee8bca6
+# __coconut_hash__ = 0x264acf72
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -70,7 +70,7 @@ def make_env(env_id,  #type: str
      num  #type: int
     ):
     num_steps = 50
-    target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
+    target_filter = ["a_0", "ugbw", "pm", "sr_r", "sr_f", "voff_stat", "cmrr", "psrr_p", "A"]
     env_name = "gace:{_coconut_format_0}-{_coconut_format_1}-v{_coconut_format_2}".format(_coconut_format_0=(env_id), _coconut_format_1=(backend), _coconut_format_2=(variant))
     env = (gym.make(env_name, target_filter=target_filter, max_steps=num_steps) if num == 1 else gace.vector_make_same(env_name, num, target_filter=target_filter, max_steps=num_steps))
     environment = Environment(env, env_name, env_id, backend, variant, num)

@@ -26,7 +26,7 @@ data Environment( env, env_id: str, ace_id: str, backend: str
 def make_env( env_id: str, backend: str, variant: int, num: int
             ) = environment where:
     num_steps     = 50
-    target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
+    target_filter = ["a_0", "ugbw", "pm", "sr_r", "sr_f", "voff_stat", "cmrr", "psrr_p", "A"]
     env_name      = f"gace:{env_id}-{backend}-v{variant}"
     env = (if num == 1 
               then gym.make( env_name
