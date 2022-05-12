@@ -26,7 +26,8 @@ data Environment( env, env_id: str, ace_id: str, backend: str
 def make_env( env_id: str, backend: str, variant: int, num: int
             ) = environment where:
     num_steps     = 50
-    target_filter = ["a_0", "ugbw", "pm", "sr_r", "sr_f", "voff_stat", "cmrr", "psrr_p", "A"]
+    target_filter = ["a_0", "ugbw", "pm", "voff_stat", "cmrr", "psrr_p", "A"]
+    #target_filter = ["ugbw", "pm", "A" , "voff_stat"] #, "a_0", "cmrr", "psrr_p"]
     env_name      = f"gace:{env_id}-{backend}-v{variant}"
     env = (if num == 1 
               then gym.make( env_name
@@ -55,12 +56,12 @@ def predicate(env) = pred where:
                                   if k in env.env.target.keys() } })
 
 def scaler(env) = scl where:
-    scl= (if env.num > 1
-               then { str(i): { k: p for k,p in gace.target.performance_scaler(e.ace_id, e.ace_backend).items() 
-                                     if k in e.target.keys() }
-                      for i,e in env.env |> enumerate }
-               else { "0": { k: p for k,p in gace.target.performance_scaler(env.ace_id, env.ace_backend).items() 
-                                  if k in env.env.target.keys() } })
+    scl = (if env.num > 1
+                then { str(i): gace.target.performance_scaler( e.ace_id
+                                                             , e.ace_backend )
+                       for i,e in env.env |> enumerate }
+                else { "0": gace.target.performance_scaler( env.ace_id
+                                                          , env.ace_backend ) })
 
 def random_action(env) = action where:
     action = (if env.num > 1
@@ -103,7 +104,7 @@ def close(env) = closed where:
 
 def current_performance(env) = perf where:
     perf = (if env.num > 1
-               then { str(i): { k: v |> np.nan_to_num 
+               then { str(i): { k: v |> np.nan_to_num |> .item()
                                 for k,v in e.ace |> ac.current_performance |> .items() }
                       for i,e in env.env |> enumerate }
                else { "0": { k: v |> np.nan_to_num 
