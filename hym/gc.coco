@@ -57,10 +57,12 @@ def predicate(env) = pred where:
 
 def scaler(env) = scl where:
     scl = (if env.num > 1
-                then { str(i): gace.target.performance_scaler( e.ace_id
+                then { str(i): gace.target.performance_scaler( e.ace
+                                                             , e.ace_id
                                                              , e.ace_backend )
                        for i,e in env.env |> enumerate }
-                else { "0": gace.target.performance_scaler( env.ace_id
+                else { "0": gace.target.performance_scaler( env.ace
+                                                          , env.ace_id
                                                           , env.ace_backend ) })
 
 def random_action(env) = action where:

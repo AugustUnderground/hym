@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-# __coconut_hash__ = 0x979e468b
+# __coconut_hash__ = 0x7a590136
 
 # Compiled with Coconut version 2.0.0-a_dev33 [How Not to Be Seen]
 
@@ -95,7 +95,7 @@ def predicate(env):
     return pred
 
 def scaler(env):
-    scl = (dict(((str(i)), (gace.target.performance_scaler(e.ace_id, e.ace_backend))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": gace.target.performance_scaler(env.ace_id, env.ace_backend)})
+    scl = (dict(((str(i)), (gace.target.performance_scaler(e.ace, e.ace_id, e.ace_backend))) for i, e in (enumerate)(env.env)) if env.num > 1 else {"0": gace.target.performance_scaler(env.ace, env.ace_id, env.ace_backend)})
 
     return scl
 
